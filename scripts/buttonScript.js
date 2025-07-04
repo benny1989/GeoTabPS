@@ -1,6 +1,6 @@
 // Button script for GEOTAB Dashboard
 // This script is executed when the "Send User Info" button is clicked on the dashboard
-
+        console.log('=== Stored User Info ===');
 geotab.customButtons.sendUserInfo = (event, api, state) => {
     try {
         // Prevent default behavior
