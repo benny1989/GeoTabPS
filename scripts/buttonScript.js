@@ -1,42 +1,62 @@
-// Define your Add-In under a unique namespace
-geotab.addin.sendUserInfo = function(event, api, state) {
-  console.log("✅ Custom button clicked");
+/*
+ * @owner Predictive Safety
+ * @description GeoTab Dashboard Button Add-in to get current user info.
+ * This script extracts user information directly from the DOM elements.
+ */
+(function (api, state) {
+    "use strict";
 
-  // Step 1: Get the current session (includes userName and database)
-  api.getSession(function(session) {
-    if (!session || !session.userName) {
-      alert("❌ Session information not available.");
-      return;
-    }
+    /**
+     * The main function that runs when the button is clicked.
+     */
+    const initialize = function () {
+        console.log("🔄 Button clicked. Getting current user info from DOM...");
+        
+        try {
+            // Get username from the DOM element
+            const userTextElement = document.getElementById('loggedInState_userText');
+            const databaseElement = document.getElementById('loggedInState_databaseNameId');
+            
+            let username = 'Not found';
+            let database = 'Not found';
+            
+            if (userTextElement && userTextElement.textContent) {
+                username = userTextElement.textContent.trim();
+                console.log("✅ Username found:", username);
+            } else {
+                console.warn("⚠️ Username element not found or empty");
+            }
+            
+            if (databaseElement && databaseElement.textContent) {
+                database = databaseElement.textContent.trim();
+                console.log("✅ Database found:", database);
+            } else {
+                console.warn("⚠️ Database element not found or empty");
+            }
+            
+            // Display the information
+            const userInfo = `Current User Information:
+            
+👤 Username: ${username}
+🗄️ Database: ${database}
+            
+✅ Information retrieved successfully from DOM!`;
+            
+            console.log("✅ User info retrieved:", { username, database });
+            alert(userInfo);
+            
+        } catch (error) {
+            console.error("❌ Error getting user info from DOM:", error);
+            alert("Error: Failed to retrieve user information from the page.");
+        }
+    };
 
-    const { userName, database } = session;
-    console.log("👤 Session Info →", session);
+    /**
+     * A button add-in returns an object with an 'initialize' method.
+     * MyGeotab will call this method when the button is clicked.
+     */
+    return {
+        initialize: initialize
+    };
 
-    // Step 2: Call Geotab API to get the full user object
-    api.call("Get", {
-      typeName: "User",
-      search: {
-        name: userName
-      }
-    }, function(result) {
-      if (!result || result.length === 0) {
-        alert("❌ User not found in Geotab.");
-        return;
-      }
-
-      const user = result[0];
-
-      // ✅ You now have the full logged-in user object
-      console.log("🎯 Logged-in User Details:");
-      console.log("ID:", user.id);
-      console.log("Name:", user.name);
-      console.log("Email:", user.email);
-      console.log("Company:", user.companyName);
-      console.log("Time Zone:", user.timeZoneId);
-
-      alert(`✅ Logged in as: ${user.name}`);
-    }, function(error) {
-      console.error("❌ Failed to get user:", error);
-    });
-  });
-};
+});
