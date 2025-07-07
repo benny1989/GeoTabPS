@@ -1,4 +1,3 @@
-/* global geotab */
 geotab.addin["WhoAmI-Driver"] = () => ({
   startup: async (api, _state, done) => {
     try {
