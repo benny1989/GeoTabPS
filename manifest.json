@@ -1,0 +1,17 @@
+{
+    "name": "WhoAmI Add-In",
+    "supportEmail": "kutay.ozi@predictivesafety.com",
+    "version": "1.0",
+    "items": [
+        {
+            "url": "https://benny1989.github.io/GeoTabPS/whoami.html",
+            "path": "DriveAppLink/",
+            "menuName": {
+                "en": "Who Am I"
+            },
+            "icon": "https://sapsprodcentus001.blob.core.windows.net/oem/WorkSafe/web/worksafe-login.png"
+        }
+    ],
+    "isSigned": false,
+    "onStartup": true
+}
