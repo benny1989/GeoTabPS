@@ -6,7 +6,6 @@
 geotab.addin.whoami = () => ({
   startup: async (api, _state, done) => {
     try {
-      /* 1. Active session (what Drive already knows) */
       const session = await api.getSession();
       const sessionInfo = {
         database:   session.database,                // database name
