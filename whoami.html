@@ -15,30 +15,8 @@ geotab.addin.whoami = () => ({
         sessionId: s.sessionId,
         server   : s.server
       };
-
-      /* 2 ─ full User */
-      const [u] = await api.call('Get', {
-        typeName: 'User',
-        search  : { id: s.credentials.userId },
-        resultsLimit: 1
-      });
-
-      /* helper to coerce any value to a clean CSV string */
-      const toCSV = v =>
-        Array.isArray(v)   ? v.map(x => (x.name || x.id || x)).join(', ')
-        : (v ? String(v) : '');
-
-      const info = {
-        ...base,
-        firstName      : u.firstName  || '',
-        lastName       : u.lastName   || '',
-        employeeNo     : u.employeeNo || '',
-        companyGroups  : toCSV(u.companyGroups),
-        securityGroups : toCSV(u.securityGroups),
-        clearance      : u.securityClearance
-      };
-
-      console.table([info]);           // SEE EVERYTHING
+      console.log(base);
+      alert("Hi " + base.userId);
       alert("Hi " + (u.firstName || base.userName));
 
     } catch (err) {
