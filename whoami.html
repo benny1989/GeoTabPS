@@ -6,42 +6,45 @@
 geotab.addin.whoami = () => ({
   startup: async (api, _state, done) => {
     try {
-      const session = await api.getSession();
-      const sessionInfo = {
-        database:   session.database,                // database name
-        userName:   session.credentials.userName,    // login e-mail
-        userId:     session.credentials.userId,      // numeric/Guid ID
-        sessionId:  session.sessionId,               // current session token
-        server:     session.server                  // server shard (e.g. my10)
+      /* 1 ─ session basics */
+      const s = await api.getSession();
+      const base = {
+        database : s.database,
+        userName : s.credentials.userName,
+        userId   : s.credentials.userId,
+        sessionId: s.sessionId,
+        server   : s.server
       };
 
-      /* 2. Get the full User entity (for name, groups, clearance, etc.) */
-      const [user] = await api.call('Get', {
+      /* 2 ─ full User */
+      const [u] = await api.call('Get', {
         typeName: 'User',
-        search:   { id: session.credentials.userId },
+        search  : { id: s.credentials.userId },
         resultsLimit: 1
       });
 
-      const userInfo = {
-        firstName:      user.firstName,
-        lastName:       user.lastName,
-        employeeNo:     user.employeeNo,
-        companyGroups:  (user.companyGroups || []).map(g => g.name || g.id).join(', '),
-        securityGroups: (user.securityGroups || []).map(g => g.name || g.id).join(', '),
-        clearance:      user.securityClearance
+      /* helper to coerce any value to a clean CSV string */
+      const toCSV = v =>
+        Array.isArray(v)   ? v.map(x => (x.name || x.id || x)).join(', ')
+        : (v ? String(v) : '');
+
+      const info = {
+        ...base,
+        firstName      : u.firstName  || '',
+        lastName       : u.lastName   || '',
+        employeeNo     : u.employeeNo || '',
+        companyGroups  : toCSV(u.companyGroups),
+        securityGroups : toCSV(u.securityGroups),
+        clearance      : u.securityClearance
       };
 
-      /* 3. Merge the two and log as a table */
-      const infoTable = { ...sessionInfo, ...userInfo };
-      console.table([infoTable]);
-
-      /* 4. Optional visible confirmation */
-      alert(`Hi ${userInfo.firstName || sessionInfo.userName}`);
+      console.table([info]);           // SEE EVERYTHING
+      alert("Hi " + (u.firstName || base.userName));
 
     } catch (err) {
-      console.error('[whoami] error:', err);
+      console.error('[whoami] error', err);
     } finally {
-      done();   // always signal Drive that startup work is complete
+      done();                          // always let Drive continue loading
     }
   }
 });
