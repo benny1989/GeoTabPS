@@ -2,15 +2,47 @@
 <html><head><meta charset="utf-8"></head>
 <body>
 <script>
-/*  manifest name → whoami  (lower-case, no spaces)  */
+/* manifest name → whoami */
 geotab.addin.whoami = () => ({
   startup: async (api, _state, done) => {
     try {
-      const s = await api.getSession();
-      alert("Hi " + s.credentials.userName);
-      console.log("[whoami] Session", s); 
+      /* 1. Active session (what Drive already knows) */
+      const session = await api.getSession();
+      const sessionInfo = {
+        database:   session.database,                // database name
+        userName:   session.credentials.userName,    // login e-mail
+        userId:     session.credentials.userId,      // numeric/Guid ID
+        sessionId:  session.sessionId,               // current session token
+        server:     session.server                  // server shard (e.g. my10)
+      };
+
+      /* 2. Get the full User entity (for name, groups, clearance, etc.) */
+      const [user] = await api.call('Get', {
+        typeName: 'User',
+        search:   { id: session.credentials.userId },
+        resultsLimit: 1
+      });
+
+      const userInfo = {
+        firstName:      user.firstName,
+        lastName:       user.lastName,
+        employeeNo:     user.employeeNo,
+        companyGroups:  (user.companyGroups || []).map(g => g.name || g.id).join(', '),
+        securityGroups: (user.securityGroups || []).map(g => g.name || g.id).join(', '),
+        clearance:      user.securityClearance
+      };
+
+      /* 3. Merge the two and log as a table */
+      const infoTable = { ...sessionInfo, ...userInfo };
+      console.table([infoTable]);
+
+      /* 4. Optional visible confirmation */
+      alert(`Hi ${userInfo.firstName || sessionInfo.userName}`);
+
+    } catch (err) {
+      console.error('[whoami] error:', err);
     } finally {
-      done();
+      done();   // always signal Drive that startup work is complete
     }
   }
 });
