@@ -25,7 +25,7 @@
             // Get the User object for this username
             api.call(
               "Get", 
-              { typeName: "User", search: { name: sessionResult.credentials.userName } }, 
+              { typeName: "User", search: { name: sessionResult.userName } }, 
               function(userResults) {
                 if (userResults && userResults.length > 0) {
                   const user = userResults[0];
@@ -34,9 +34,8 @@
                   
                   // Show basic info in alert
                   const message = `Session Database: ${sessionResult.database}
-Server: ${sessionResult.server}
-Username: ${sessionResult.credentials.userName}
-User ID: ${sessionResult.credentials.userId}
+Username: ${sessionResult.userName}
+Session ID: ${sessionResult.sessionId}
 
 User Name: ${user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.name}
 Email: ${user.email || 'N/A'}
@@ -45,7 +44,7 @@ Check browser console (F12) for complete data objects.`;
                   
                   alert(message);
                 } else {
-                  alert('No user found for: ' + sessionResult.credentials.userName);
+                  alert('No user found for: ' + sessionResult.userName);
                 }
                 initializeCallback();
               },
