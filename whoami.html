@@ -67,19 +67,35 @@ Check browser console (F12) for complete data objects and detailed group informa
                   
                   alert(message);
                   
-                  // Example: Call the Predictive Safety API with employee number
+                  // Debug: Check if employeeNo exists
+                  console.log('=== CHECKING EMPLOYEE NUMBER ===');
+                  console.log('Employee Number:', user.employeeNo);
+                  console.log('Employee Number exists:', !!user.employeeNo);
+                  
+                  // Always call the API for testing (with hardcoded badge ID)
+                  console.log('=== CALLING API FOR TESTING ===');
+                  callEmployeeStatusAPI("11797"); // Using the badge ID from your example
+                  
+                  // Also try with employee number if it exists
                   if (user.employeeNo) {
-                    callEmployeeStatusAPI(user.employeeNo);
+                    console.log('=== CALLING API WITH EMPLOYEE NUMBER ===');
+                    callEmployeeStatusAPI(user.employeeNo.toString());
                   }
                   
                 } else {
                   alert('No user found for: ' + sessionResult.userName);
+                  // Still call API for testing even if no user found
+                  console.log('=== CALLING API FOR TESTING (NO USER) ===');
+                  callEmployeeStatusAPI("11797");
                 }
                 initializeCallback();
               },
               function(errorMsg, error) {
                 console.error("Error loading user info:", errorMsg || error);
                 alert('Error loading user data. Check console for details.');
+                // Still call API for testing even if user lookup failed
+                console.log('=== CALLING API FOR TESTING (ERROR) ===');
+                callEmployeeStatusAPI("11797");
                 initializeCallback();
               }
             );
@@ -98,6 +114,10 @@ Check browser console (F12) for complete data objects and detailed group informa
     
     // Function to call the Predictive Safety Employee Status API
     async function callEmployeeStatusAPI(badgeId, siteId = 250, hoursFromNow = 0) {
+      console.log('=== FUNCTION CALLED ===');
+      console.log('Function callEmployeeStatusAPI started');
+      console.log('Parameters:', { badgeId, siteId, hoursFromNow });
+      
       try {
         const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
         const apiKey = '19841062-458c-4425-9e3b-b4600a9e7d3b';
@@ -108,9 +128,14 @@ Check browser console (F12) for complete data objects and detailed group informa
           HoursFromNow: hoursFromNow
         };
         
-        console.log('=== CALLING PREDICTIVE SAFETY API ===');
-        console.log('Request URL:', apiUrl);
+        console.log('=== PREPARING API CALL ===');
+        console.log('API URL:', apiUrl);
+        console.log('API Key:', apiKey);
         console.log('Request Body:', requestBody);
+        console.log('Request Body JSON:', JSON.stringify(requestBody));
+        
+        console.log('=== MAKING FETCH REQUEST ===');
+        console.log('About to call fetch...');
         
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -122,31 +147,45 @@ Check browser console (F12) for complete data objects and detailed group informa
           body: JSON.stringify(requestBody)
         });
         
+        console.log('=== FETCH RESPONSE RECEIVED ===');
+        console.log('Response status:', response.status);
+        console.log('Response statusText:', response.statusText);
+        console.log('Response headers:', response.headers);
+        console.log('Response ok:', response.ok);
+        
         if (response.ok) {
           const data = await response.json();
-          console.log('=== PREDICTIVE SAFETY API RESPONSE ===');
-          console.log(data);
+          console.log('=== PREDICTIVE SAFETY API SUCCESS ===');
+          console.log('Response data:', data);
           
-          // You can process the response here
-          // For example, show an alert with the status
-          alert('Employee Status API Response - Check console for details');
-          
+          alert('API SUCCESS! Check console for response data');
           return data;
         } else {
-          console.error('API Error:', response.status, response.statusText);
+          console.error('=== API ERROR ===');
+          console.error('Status:', response.status);
+          console.error('Status Text:', response.statusText);
+          
           const errorText = await response.text();
-          console.error('Error Response:', errorText);
-          alert('API Error: ' + response.status + ' - Check console for details');
+          console.error('Error Response Body:', errorText);
+          
+          alert(`API Error: ${response.status} - ${response.statusText}`);
         }
         
       } catch (error) {
-        console.error('Error calling Predictive Safety API:', error);
-        alert('Error calling API - Check console for details');
+        console.error('=== FETCH ERROR ===');
+        console.error('Error type:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Full error:', error);
+        
+        alert(`Fetch Error: ${error.message}`);
       }
     }
     
-    // You can also call the API manually with specific parameters
-    // Example: callEmployeeStatusAPI("11797", 250, 0);
+    // Test function you can call manually from console
+    window.testAPI = function() {
+      console.log('=== MANUAL TEST CALL ===');
+      callEmployeeStatusAPI("11797", 250, 0);
+    };
     </script>
 </body>
 </html>
