@@ -66,6 +66,12 @@ Security Groups: ${securityGroups}
 Check browser console (F12) for complete data objects and detailed group information.`;
                   
                   alert(message);
+                  
+                  // Example: Call the Predictive Safety API with employee number
+                  if (user.employeeNo) {
+                    callEmployeeStatusAPI(user.employeeNo);
+                  }
+                  
                 } else {
                   alert('No user found for: ' + sessionResult.userName);
                 }
@@ -89,6 +95,58 @@ Check browser console (F12) for complete data objects and detailed group informa
         }
       };
     };
+    
+    // Function to call the Predictive Safety Employee Status API
+    async function callEmployeeStatusAPI(badgeId, siteId = 250, hoursFromNow = 0) {
+      try {
+        const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
+        const apiKey = '19841062-458c-4425-9e3b-b4600a9e7d3b';
+        
+        const requestBody = {
+          SiteId: siteId,
+          BadgeId: badgeId,
+          HoursFromNow: hoursFromNow
+        };
+        
+        console.log('=== CALLING PREDICTIVE SAFETY API ===');
+        console.log('Request URL:', apiUrl);
+        console.log('Request Body:', requestBody);
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'apiKey': apiKey
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('=== PREDICTIVE SAFETY API RESPONSE ===');
+          console.log(data);
+          
+          // You can process the response here
+          // For example, show an alert with the status
+          alert('Employee Status API Response - Check console for details');
+          
+          return data;
+        } else {
+          console.error('API Error:', response.status, response.statusText);
+          const errorText = await response.text();
+          console.error('Error Response:', errorText);
+          alert('API Error: ' + response.status + ' - Check console for details');
+        }
+        
+      } catch (error) {
+        console.error('Error calling Predictive Safety API:', error);
+        alert('Error calling API - Check console for details');
+      }
+    }
+    
+    // You can also call the API manually with specific parameters
+    // Example: callEmployeeStatusAPI("11797", 250, 0);
     </script>
 </body>
 </html>
