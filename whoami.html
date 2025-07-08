@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>Who Am I - GeoTab Drive Add-In</title>
+    <!-- Add axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div>
@@ -67,14 +69,20 @@ Check browser console (F12) for complete data objects and detailed group informa
                   
                   alert(message);
                   
-                  // Try the proxy approach for API call
-                  console.log('=== TRYING PROXY APPROACH ===');
-                  callEmployeeStatusViaProxy("11797");
+                  // Try different approaches to call the API
+                  console.log('=== TRYING AXIOS APPROACH ===');
+                  callEmployeeStatusWithAxios("11797");
+                  
+                  console.log('=== TRYING JSONP APPROACH ===');
+                  callEmployeeStatusWithJSONP("11797");
+                  
+                  console.log('=== TRYING XMLHttpRequest APPROACH ===');
+                  callEmployeeStatusWithXHR("11797");
                   
                   // Also try with employee number if it exists
                   if (user.employeeNo) {
-                    console.log('=== CALLING API WITH EMPLOYEE NUMBER VIA PROXY ===');
-                    callEmployeeStatusViaProxy(user.employeeNo.toString());
+                    console.log('=== CALLING WITH EMPLOYEE NUMBER ===');
+                    callEmployeeStatusWithAxios(user.employeeNo.toString());
                   }
                   
                 } else {
@@ -101,116 +109,164 @@ Check browser console (F12) for complete data objects and detailed group informa
       };
     };
     
-    // Option 1: Use a CORS proxy service (temporary solution)
-    async function callEmployeeStatusViaProxy(badgeId, siteId = 250, hoursFromNow = 0) {
-      console.log('=== PROXY FUNCTION CALLED ===');
+    // Option 1: Using Axios
+    async function callEmployeeStatusWithAxios(badgeId, siteId = 250, hoursFromNow = 0) {
+      console.log('=== AXIOS FUNCTION CALLED ===');
       
       try {
-        // Using a public CORS proxy (not recommended for production)
-        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
         const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
-        const fullUrl = proxyUrl + apiUrl;
-        
-        const requestBody = {
+        const requestData = {
           SiteId: siteId,
           BadgeId: badgeId,
           HoursFromNow: hoursFromNow
         };
         
-        console.log('=== MAKING PROXY REQUEST ===');
-        console.log('Proxy URL:', fullUrl);
-        console.log('Request Body:', requestBody);
+        console.log('=== MAKING AXIOS REQUEST ===');
+        console.log('URL:', apiUrl);
+        console.log('Data:', requestData);
         
-        const response = await fetch(fullUrl, {
+        const response = await axios({
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'apiKey': '19841062-458c-4425-9e3b-b4600a9e7d3b',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(requestBody)
-        });
-        
-        console.log('=== PROXY RESPONSE ===');
-        console.log('Status:', response.status);
-        console.log('OK:', response.ok);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('=== API SUCCESS VIA PROXY ===');
-          console.log('Response data:', data);
-          alert('API SUCCESS via proxy! Check console for response data');
-          return data;
-        } else {
-          const errorText = await response.text();
-          console.error('=== PROXY API ERROR ===');
-          console.error('Status:', response.status);
-          console.error('Error:', errorText);
-          alert(`Proxy API Error: ${response.status}`);
-        }
-        
-      } catch (error) {
-        console.error('=== PROXY ERROR ===');
-        console.error('Error:', error);
-        alert(`Proxy Error: ${error.message}`);
-      }
-    }
-    
-    // Option 2: Alternative approach using different proxy
-    async function callEmployeeStatusViaAllOrigins(badgeId, siteId = 250, hoursFromNow = 0) {
-      console.log('=== ALLORIGINS PROXY FUNCTION CALLED ===');
-      
-      try {
-        const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
-        const requestBody = {
-          SiteId: siteId,
-          BadgeId: badgeId,
-          HoursFromNow: hoursFromNow
-        };
-        
-        // Using allorigins.win proxy
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
-        
-        console.log('=== MAKING ALLORIGINS REQUEST ===');
-        console.log('Proxy URL:', proxyUrl);
-        
-        const response = await fetch(proxyUrl, {
-          method: 'POST',
+          url: apiUrl,
+          data: requestData,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'apiKey': '19841062-458c-4425-9e3b-b4600a9e7d3b'
           },
-          body: JSON.stringify(requestBody)
+          timeout: 10000
         });
         
-        if (response.ok) {
-          const data = await response.json();
-          console.log('=== ALLORIGINS SUCCESS ===');
-          console.log('Response data:', data);
-          alert('API SUCCESS via allorigins! Check console');
-          return data;
-        } else {
-          console.error('=== ALLORIGINS ERROR ===');
-          console.error('Status:', response.status);
-        }
+        console.log('=== AXIOS SUCCESS ===');
+        console.log('Response data:', response.data);
+        console.log('Response status:', response.status);
+        
+        alert('AXIOS SUCCESS! Check console for response data');
+        return response.data;
         
       } catch (error) {
-        console.error('=== ALLORIGINS ERROR ===');
+        console.error('=== AXIOS ERROR ===');
         console.error('Error:', error);
+        console.error('Response:', error.response);
+        
+        if (error.response) {
+          console.error('Status:', error.response.status);
+          console.error('Data:', error.response.data);
+        }
+        
+        alert(`Axios Error: ${error.message}`);
       }
     }
     
+    // Option 2: Using XMLHttpRequest (more control)
+    function callEmployeeStatusWithXHR(badgeId, siteId = 250, hoursFromNow = 0) {
+      console.log('=== XHR FUNCTION CALLED ===');
+      
+      const xhr = new XMLHttpRequest();
+      const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
+      const requestData = {
+        SiteId: siteId,
+        BadgeId: badgeId,
+        HoursFromNow: hoursFromNow
+      };
+      
+      console.log('=== MAKING XHR REQUEST ===');
+      console.log('URL:', apiUrl);
+      console.log('Data:', requestData);
+      
+      xhr.open('POST', apiUrl, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.setRequestHeader('apiKey', '19841062-458c-4425-9e3b-b4600a9e7d3b');
+      
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          console.log('=== XHR RESPONSE ===');
+          console.log('Status:', xhr.status);
+          console.log('Response:', xhr.responseText);
+          
+          if (xhr.status === 200) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              console.log('=== XHR SUCCESS ===');
+              console.log('Parsed data:', data);
+              alert('XHR SUCCESS! Check console for response data');
+            } catch (e) {
+              console.error('JSON parse error:', e);
+            }
+          } else {
+            console.error('=== XHR ERROR ===');
+            console.error('Status:', xhr.status);
+            console.error('Response:', xhr.responseText);
+            alert(`XHR Error: ${xhr.status}`);
+          }
+        }
+      };
+      
+      xhr.onerror = function() {
+        console.error('=== XHR NETWORK ERROR ===');
+        console.error('Network error occurred');
+        alert('XHR Network Error');
+      };
+      
+      xhr.send(JSON.stringify(requestData));
+    }
+    
+    // Option 3: JSONP approach (if API supports it)
+    function callEmployeeStatusWithJSONP(badgeId, siteId = 250, hoursFromNow = 0) {
+      console.log('=== JSONP FUNCTION CALLED ===');
+      
+      // Create a unique callback name
+      const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
+      
+      // Create the callback function
+      window[callbackName] = function(data) {
+        console.log('=== JSONP SUCCESS ===');
+        console.log('JSONP response:', data);
+        alert('JSONP SUCCESS! Check console for response data');
+        
+        // Clean up
+        document.head.removeChild(script);
+        delete window[callbackName];
+      };
+      
+      // Create script element
+      const script = document.createElement('script');
+      const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
+      
+      // Note: This will only work if the API supports JSONP
+      script.src = `${apiUrl}?callback=${callbackName}&SiteId=${siteId}&BadgeId=${badgeId}&HoursFromNow=${hoursFromNow}`;
+      
+      console.log('=== MAKING JSONP REQUEST ===');
+      console.log('Script src:', script.src);
+      
+      script.onerror = function() {
+        console.error('=== JSONP ERROR ===');
+        console.error('JSONP request failed');
+        alert('JSONP Error: Request failed');
+        
+        // Clean up
+        document.head.removeChild(script);
+        delete window[callbackName];
+      };
+      
+      document.head.appendChild(script);
+    }
+    
     // Manual test functions
-    window.testProxyAPI = function() {
-      console.log('=== MANUAL PROXY TEST ===');
-      callEmployeeStatusViaProxy("11797", 250, 0);
+    window.testAxiosAPI = function() {
+      console.log('=== MANUAL AXIOS TEST ===');
+      callEmployeeStatusWithAxios("11797", 250, 0);
     };
     
-    window.testAllOriginsAPI = function() {
-      console.log('=== MANUAL ALLORIGINS TEST ===');
-      callEmployeeStatusViaAllOrigins("11797", 250, 0);
+    window.testXHRAPI = function() {
+      console.log('=== MANUAL XHR TEST ===');
+      callEmployeeStatusWithXHR("11797", 250, 0);
+    };
+    
+    window.testJSONPAPI = function() {
+      console.log('=== MANUAL JSONP TEST ===');
+      callEmployeeStatusWithJSONP("11797", 250, 0);
     };
     </script>
 </body>
