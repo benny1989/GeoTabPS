@@ -14,8 +14,6 @@
     
     <script>
     geotab.addin.whoami = function() {
-      let userInfo = null;
-
       return {
         startup: function(api, state, initializeCallback) {
           api.getSession((sessionResult) => {
@@ -32,15 +30,40 @@
                   console.log('=== FULL USER OBJECT ===');
                   console.log(user);
                   
-                  // Show basic info in alert
-                  const message = `Session Database: ${sessionResult.database}
+                  // Extract groups information
+                  let companyGroups = "None";
+                  let securityGroups = "None";
+                  
+                  if (user.companyGroups && user.companyGroups.length > 0) {
+                    companyGroups = user.companyGroups.map(g => g.name || g.id).join(", ");
+                    console.log('=== COMPANY GROUPS ===');
+                    console.log(user.companyGroups);
+                  }
+                  
+                  if (user.securityGroups && user.securityGroups.length > 0) {
+                    securityGroups = user.securityGroups.map(sg => sg.name || sg.id).join(", ");
+                    console.log('=== SECURITY GROUPS ===');
+                    console.log(user.securityGroups);
+                  }
+                  
+                  // Show detailed info with emphasis on groups
+                  const message = `=== USER INFORMATION ===
+Database: ${sessionResult.database}
 Username: ${sessionResult.userName}
 Session ID: ${sessionResult.sessionId}
 
-User Name: ${user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.name}
+=== USER DETAILS ===
+Name: ${user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.name}
 Email: ${user.email || 'N/A'}
+Phone: ${user.phone || 'N/A'}
+Employee #: ${user.employeeNo || 'N/A'}
+Is Driver: ${user.isDriver ? 'Yes' : 'No'}
 
-Check browser console (F12) for complete data objects.`;
+=== GROUPS ===
+Company Groups: ${companyGroups}
+Security Groups: ${securityGroups}
+
+Check browser console (F12) for complete data objects and detailed group information.`;
                   
                   alert(message);
                 } else {
