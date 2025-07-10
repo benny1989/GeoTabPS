@@ -3,9 +3,47 @@
 <head>
     <meta charset="utf-8">
     <title>Who Am I - GeoTab Drive Add-In</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin: 5px;
+        }
+        .badge-guarded {
+            background-color: #ffc107;
+            color: #856404;
+            border: 2px solid #e0a800;
+        }
+        .badge-significant {
+            background-color: #dc3545;
+            color: white;
+            border: 2px solid #c82333;
+        }
+        .badge-clear {
+            background-color: #17a2b8;
+            color: white;
+            border: 2px solid #138496;
+        }
+    </style>
 </head>
 <body>
-    <div>
+    <div class="container">
         <h2>Who Am I - User Information</h2>
         <div id="userInfo">
             <p>Loading user information...</p>
@@ -67,7 +105,7 @@ Check browser console (F12) for complete data objects and detailed group informa
                   
                   alert(message);
                   
-                  // Simulate API call and return status based on username
+                  // Simulate API call and show status on dashboard
                   console.log('=== SIMULATING API CALL ===');
                   simulateEmployeeStatusAPI(sessionResult.userName);
                   
@@ -86,7 +124,9 @@ Check browser console (F12) for complete data objects and detailed group informa
         },
 
         focus: function(api, state) {
-          // Do nothing on focus
+          // Show status when add-in is focused
+          console.log('=== ADD-IN FOCUSED ===');
+          // You can add status display logic here if needed
         },
 
         blur: function(api, state) {
@@ -95,7 +135,7 @@ Check browser console (F12) for complete data objects and detailed group informa
       };
     };
     
-    // Function to simulate API call and return hardcoded status
+    // Function to simulate API call and show status on dashboard
     async function simulateEmployeeStatusAPI(username) {
       console.log('=== SIMULATED API FUNCTION CALLED ===');
       console.log('Username:', username);
@@ -145,26 +185,94 @@ Check browser console (F12) for complete data objects and detailed group informa
         console.log('Simulated Response:', employeeData);
         console.log('Status:', status);
         
-        // Show the result in an alert
-        const statusMessage = `=== EMPLOYEE STATUS API RESPONSE ===
-Employee: ${employeeData.EmployeeName || 'Unknown'}
-Email: ${employeeData.EmployeeEmail}
-Status: ${employeeData.Status}
-Guard Level: ${employeeData.GuardLevel}
-Alert Status: ${employeeData.AlertStatus}
-Last Update: ${employeeData.LastUpdate}
-
-This is a simulated API response.
-For username "${username}": ${status}`;
+        // Show status on the GeoTab Drive dashboard
+        showStatusOnDashboard(employeeData, status);
         
-        alert(statusMessage);
         return employeeData;
         
       } catch (error) {
         console.error('=== SIMULATED API ERROR ===');
         console.error('Error:', error);
-        alert(`Simulated API Error: ${error.message}`);
       }
+    }
+    
+    // Function to show status on the GeoTab Drive dashboard
+    function showStatusOnDashboard(employeeData, status) {
+      console.log('=== SHOWING STATUS ON DASHBOARD ===');
+      
+      // Try to find the add-in button/container in the GeoTab Drive interface
+      const addinContainer = findAddinContainer();
+      
+      if (addinContainer) {
+        // Create status badge
+        const statusBadge = createStatusBadge(status, employeeData);
+        
+        // Add the status badge to the dashboard
+        addinContainer.appendChild(statusBadge);
+        
+        console.log('Status badge added to dashboard');
+      } else {
+        console.log('Could not find add-in container, showing alert instead');
+        alert(`STATUS: ${status} - ${employeeData.EmployeeName}`);
+      }
+    }
+    
+    // Function to find the add-in container in GeoTab Drive
+    function findAddinContainer() {
+      // Try multiple selectors to find the add-in container
+      const selectors = [
+        '[data-addin="whoami"]',
+        '.addin-container',
+        '.drive-addin',
+        '[data-path="DriveAppLink/"]',
+        '.menu-item',
+        '.addin-item'
+      ];
+      
+      for (const selector of selectors) {
+        const element = document.querySelector(selector);
+        if (element) {
+          console.log('Found add-in container:', selector);
+          return element;
+        }
+      }
+      
+      // If no specific container found, try to find by text content
+      const elements = document.querySelectorAll('*');
+      for (const element of elements) {
+        if (element.textContent && element.textContent.includes('Who Am I')) {
+          console.log('Found add-in by text content');
+          return element;
+        }
+      }
+      
+      return null;
+    }
+    
+    // Function to create status badge
+    function createStatusBadge(status, employeeData) {
+      const badge = document.createElement('div');
+      
+      // Determine CSS classes based on status
+      let badgeClass = 'badge-clear';
+      
+      if (status === 'GUARDED') {
+        badgeClass = 'badge-guarded';
+      } else if (status === 'SIGNIFICANT') {
+        badgeClass = 'badge-significant';
+      }
+      
+      badge.className = `status-badge ${badgeClass}`;
+      badge.textContent = `STATUS: ${status}`;
+      badge.title = `${employeeData.EmployeeName} - ${employeeData.Status}`;
+      
+      // Add some positioning styles
+      badge.style.position = 'absolute';
+      badge.style.top = '5px';
+      badge.style.right = '5px';
+      badge.style.zIndex = '1000';
+      
+      return badge;
     }
     
     // Manual test function
@@ -177,6 +285,15 @@ For username "${username}": ${status}`;
     window.testOtherUser = function() {
       console.log('=== MANUAL OTHER USER TEST ===');
       simulateEmployeeStatusAPI("other.user@example.com");
+    };
+    
+    // Function to manually add status badge anywhere
+    window.addStatusBadge = function(status = 'GUARDED') {
+      const badge = createStatusBadge(status, {
+        EmployeeName: 'Test Employee',
+        Status: status
+      });
+      document.body.appendChild(badge);
     };
     </script>
 </body>
