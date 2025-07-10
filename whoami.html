@@ -221,16 +221,11 @@ Check browser console (F12) for complete data objects and detailed group informa
     function findAddinContainer() {
       console.log('=== SEARCHING FOR FITFORDUTY ADD-IN ===');
       
-      // First, try to find by the specific add-in structure
-      const addinElements = document.querySelectorAll('.dashboard.blocks.addin');
-      
-      for (const element of addinElements) {
-        // Look for the "FitForDuty" text in the addin-name span
-        const addinName = element.querySelector('.addin-name');
-        if (addinName && addinName.textContent.includes('FitForDuty')) {
-          console.log('Found FitForDuty add-in by addin-name');
-          return element;
-        }
+      // Look for the specific span with class "addin-name" containing "FitForDuty"
+      const fitForDutySpan = document.querySelector('span.addin-name');
+      if (fitForDutySpan && fitForDutySpan.textContent.includes('FitForDuty')) {
+        console.log('Found FitForDuty span by addin-name class');
+        return fitForDutySpan;
       }
       
       // If not found, try to find by the image src that contains "worksafe-login.png"
@@ -262,7 +257,7 @@ Check browser console (F12) for complete data objects and detailed group informa
     
     // Function to create status badge
     function createStatusBadge(status, employeeData) {
-      const badge = document.createElement('div');
+      const badge = document.createElement('span');
       
       // Determine CSS classes based on status
       let badgeClass = 'badge-clear';
@@ -274,14 +269,13 @@ Check browser console (F12) for complete data objects and detailed group informa
       }
       
       badge.className = `status-badge ${badgeClass}`;
-      badge.textContent = `STATUS: ${status}`;
+      badge.textContent = ` (${status})`;
       badge.title = `${employeeData.EmployeeName} - ${employeeData.Status}`;
       
-      // Add some positioning styles
-      badge.style.position = 'absolute';
-      badge.style.top = '5px';
-      badge.style.right = '5px';
-      badge.style.zIndex = '1000';
+      // Add some styling for inline display
+      badge.style.marginLeft = '8px';
+      badge.style.fontSize = '12px';
+      badge.style.fontWeight = 'normal';
       
       return badge;
     }
