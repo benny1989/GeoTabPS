@@ -3,8 +3,6 @@
 <head>
     <meta charset="utf-8">
     <title>Who Am I - GeoTab Drive Add-In</title>
-    <!-- Add axios CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div>
@@ -69,21 +67,9 @@ Check browser console (F12) for complete data objects and detailed group informa
                   
                   alert(message);
                   
-                  // Try different approaches to call the API
-                  console.log('=== TRYING AXIOS APPROACH ===');
-                  callEmployeeStatusWithAxios("11797");
-                  
-                  console.log('=== TRYING JSONP APPROACH ===');
-                  callEmployeeStatusWithJSONP("11797");
-                  
-                  console.log('=== TRYING XMLHttpRequest APPROACH ===');
-                  callEmployeeStatusWithXHR("11797");
-                  
-                  // Also try with employee number if it exists
-                  if (user.employeeNo) {
-                    console.log('=== CALLING WITH EMPLOYEE NUMBER ===');
-                    callEmployeeStatusWithAxios(user.employeeNo.toString());
-                  }
+                  // Simulate API call and return status based on username
+                  console.log('=== SIMULATING API CALL ===');
+                  simulateEmployeeStatusAPI(sessionResult.userName);
                   
                 } else {
                   alert('No user found for: ' + sessionResult.userName);
@@ -109,164 +95,88 @@ Check browser console (F12) for complete data objects and detailed group informa
       };
     };
     
-    // Option 1: Using Axios
-    async function callEmployeeStatusWithAxios(badgeId, siteId = 250, hoursFromNow = 0) {
-      console.log('=== AXIOS FUNCTION CALLED ===');
+    // Function to simulate API call and return hardcoded status
+    async function simulateEmployeeStatusAPI(username) {
+      console.log('=== SIMULATED API FUNCTION CALLED ===');
+      console.log('Username:', username);
       
       try {
-        const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
-        const requestData = {
-          SiteId: siteId,
-          BadgeId: badgeId,
-          HoursFromNow: hoursFromNow
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate API response based on username
+        let status = "UNKNOWN";
+        let employeeData = {
+          SiteId: 250,
+          BadgeId: "11797",
+          HoursFromNow: 0
         };
         
-        console.log('=== MAKING AXIOS REQUEST ===');
-        console.log('URL:', apiUrl);
-        console.log('Data:', requestData);
-        
-        const response = await axios({
-          method: 'POST',
-          url: apiUrl,
-          data: requestData,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'apiKey': '19841062-458c-4425-9e3b-b4600a9e7d3b'
-          },
-          timeout: 10000
-        });
-        
-        console.log('=== AXIOS SUCCESS ===');
-        console.log('Response data:', response.data);
-        console.log('Response status:', response.status);
-        
-        alert('AXIOS SUCCESS! Check console for response data');
-        return response.data;
-        
-      } catch (error) {
-        console.error('=== AXIOS ERROR ===');
-        console.error('Error:', error);
-        console.error('Response:', error.response);
-        
-        if (error.response) {
-          console.error('Status:', error.response.status);
-          console.error('Data:', error.response.data);
+        // Check if username matches and return GUARDED status
+        if (username === "arben.abazi@telos-labs.com") {
+          status = "GUARDED";
+          employeeData = {
+            SiteId: 250,
+            BadgeId: "11797",
+            HoursFromNow: 0,
+            EmployeeName: "Arben Abazi",
+            EmployeeEmail: "arben.abazi@telos-labs.com",
+            Status: "GUARDED",
+            LastUpdate: new Date().toISOString(),
+            GuardLevel: "HIGH",
+            AlertStatus: "ACTIVE"
+          };
+        } else {
+          status = "SIGNIFICANT";
+          employeeData = {
+            SiteId: 250,
+            BadgeId: "11798",
+            HoursFromNow: 0,
+            EmployeeName: "Kutay Ozi",
+            EmployeeEmail: username,
+            Status: "SIGNIFICANT",
+            LastUpdate: new Date().toISOString(),
+            GuardLevel: "NONE",
+            AlertStatus: "INACTIVE"
+          };
         }
         
-        alert(`Axios Error: ${error.message}`);
+        console.log('=== SIMULATED API SUCCESS ===');
+        console.log('Simulated Response:', employeeData);
+        console.log('Status:', status);
+        
+        // Show the result in an alert
+        const statusMessage = `=== EMPLOYEE STATUS API RESPONSE ===
+Employee: ${employeeData.EmployeeName || 'Unknown'}
+Email: ${employeeData.EmployeeEmail}
+Status: ${employeeData.Status}
+Guard Level: ${employeeData.GuardLevel}
+Alert Status: ${employeeData.AlertStatus}
+Last Update: ${employeeData.LastUpdate}
+
+This is a simulated API response.
+For username "${username}": ${status}`;
+        
+        alert(statusMessage);
+        return employeeData;
+        
+      } catch (error) {
+        console.error('=== SIMULATED API ERROR ===');
+        console.error('Error:', error);
+        alert(`Simulated API Error: ${error.message}`);
       }
     }
     
-    // Option 2: Using XMLHttpRequest (more control)
-    function callEmployeeStatusWithXHR(badgeId, siteId = 250, hoursFromNow = 0) {
-      console.log('=== XHR FUNCTION CALLED ===');
-      
-      const xhr = new XMLHttpRequest();
-      const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
-      const requestData = {
-        SiteId: siteId,
-        BadgeId: badgeId,
-        HoursFromNow: hoursFromNow
-      };
-      
-      console.log('=== MAKING XHR REQUEST ===');
-      console.log('URL:', apiUrl);
-      console.log('Data:', requestData);
-      
-      xhr.open('POST', apiUrl, true);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.setRequestHeader('Accept', 'application/json');
-      xhr.setRequestHeader('apiKey', '19841062-458c-4425-9e3b-b4600a9e7d3b');
-      
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          console.log('=== XHR RESPONSE ===');
-          console.log('Status:', xhr.status);
-          console.log('Response:', xhr.responseText);
-          
-          if (xhr.status === 200) {
-            try {
-              const data = JSON.parse(xhr.responseText);
-              console.log('=== XHR SUCCESS ===');
-              console.log('Parsed data:', data);
-              alert('XHR SUCCESS! Check console for response data');
-            } catch (e) {
-              console.error('JSON parse error:', e);
-            }
-          } else {
-            console.error('=== XHR ERROR ===');
-            console.error('Status:', xhr.status);
-            console.error('Response:', xhr.responseText);
-            alert(`XHR Error: ${xhr.status}`);
-          }
-        }
-      };
-      
-      xhr.onerror = function() {
-        console.error('=== XHR NETWORK ERROR ===');
-        console.error('Network error occurred');
-        alert('XHR Network Error');
-      };
-      
-      xhr.send(JSON.stringify(requestData));
-    }
-    
-    // Option 3: JSONP approach (if API supports it)
-    function callEmployeeStatusWithJSONP(badgeId, siteId = 250, hoursFromNow = 0) {
-      console.log('=== JSONP FUNCTION CALLED ===');
-      
-      // Create a unique callback name
-      const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
-      
-      // Create the callback function
-      window[callbackName] = function(data) {
-        console.log('=== JSONP SUCCESS ===');
-        console.log('JSONP response:', data);
-        alert('JSONP SUCCESS! Check console for response data');
-        
-        // Clean up
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      // Create script element
-      const script = document.createElement('script');
-      const apiUrl = 'https://staging.alert.predictivesafety.com/api/v1.0/Employee/Status';
-      
-      // Note: This will only work if the API supports JSONP
-      script.src = `${apiUrl}?callback=${callbackName}&SiteId=${siteId}&BadgeId=${badgeId}&HoursFromNow=${hoursFromNow}`;
-      
-      console.log('=== MAKING JSONP REQUEST ===');
-      console.log('Script src:', script.src);
-      
-      script.onerror = function() {
-        console.error('=== JSONP ERROR ===');
-        console.error('JSONP request failed');
-        alert('JSONP Error: Request failed');
-        
-        // Clean up
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      document.head.appendChild(script);
-    }
-    
-    // Manual test functions
-    window.testAxiosAPI = function() {
-      console.log('=== MANUAL AXIOS TEST ===');
-      callEmployeeStatusWithAxios("11797", 250, 0);
+    // Manual test function
+    window.testSimulatedAPI = function() {
+      console.log('=== MANUAL SIMULATED API TEST ===');
+      simulateEmployeeStatusAPI("arben.abazi@telos-labs.com");
     };
     
-    window.testXHRAPI = function() {
-      console.log('=== MANUAL XHR TEST ===');
-      callEmployeeStatusWithXHR("11797", 250, 0);
-    };
-    
-    window.testJSONPAPI = function() {
-      console.log('=== MANUAL JSONP TEST ===');
-      callEmployeeStatusWithJSONP("11797", 250, 0);
+    // Test with different username
+    window.testOtherUser = function() {
+      console.log('=== MANUAL OTHER USER TEST ===');
+      simulateEmployeeStatusAPI("other.user@example.com");
     };
     </script>
 </body>
