@@ -219,33 +219,44 @@ Check browser console (F12) for complete data objects and detailed group informa
     
     // Function to find the add-in container in GeoTab Drive
     function findAddinContainer() {
-      // Try multiple selectors to find the add-in container
-      const selectors = [
-        '[data-addin="whoami"]',
-        '.addin-container',
-        '.drive-addin',
-        '[data-path="DriveAppLink/"]',
-        '.menu-item',
-        '.addin-item'
-      ];
+      console.log('=== SEARCHING FOR WHO AM I ADD-IN ===');
       
-      for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-          console.log('Found add-in container:', selector);
+      // First, try to find by the specific add-in structure
+      const addinElements = document.querySelectorAll('.dashboard.blocks.addin');
+      
+      for (const element of addinElements) {
+        // Look for the "Who Am I" text in the addin-name span
+        const addinName = element.querySelector('.addin-name');
+        if (addinName && addinName.textContent.includes('Who Am I')) {
+          console.log('Found Who Am I add-in by addin-name');
           return element;
         }
       }
       
-      // If no specific container found, try to find by text content
+      // If not found, try to find by the image src that contains "worksafe-login.png"
+      const addinWithImage = document.querySelectorAll('.dashboard.blocks.addin img[src*="worksafe-login.png"]');
+      if (addinWithImage.length > 0) {
+        console.log('Found Who Am I add-in by image src');
+        return addinWithImage[0].closest('.dashboard.blocks.addin');
+      }
+      
+      // Try to find by any element containing "Who Am I" text
       const elements = document.querySelectorAll('*');
       for (const element of elements) {
-        if (element.textContent && element.textContent.includes('Who Am I')) {
-          console.log('Found add-in by text content');
-          return element;
+        if (element.textContent && element.textContent.trim() === 'Who Am I') {
+          console.log('Found Who Am I add-in by exact text match');
+          return element.closest('.dashboard.blocks.addin') || element.closest('.dashboard');
         }
       }
       
+      // Last resort: find any add-in and we'll add the badge there
+      const anyAddin = document.querySelector('.dashboard.blocks.addin');
+      if (anyAddin) {
+        console.log('Found generic add-in as fallback');
+        return anyAddin;
+      }
+      
+      console.log('Could not find Who Am I add-in container');
       return null;
     }
     
@@ -298,3 +309,4 @@ Check browser console (F12) for complete data objects and detailed group informa
     </script>
 </body>
 </html>
+
