@@ -219,16 +219,16 @@ Check browser console (F12) for complete data objects and detailed group informa
     
     // Function to find the add-in container in GeoTab Drive
     function findAddinContainer() {
-      console.log('=== SEARCHING FOR WHO AM I ADD-IN ===');
+      console.log('=== SEARCHING FOR FITFORDUTY ADD-IN ===');
       
       // First, try to find by the specific add-in structure
       const addinElements = document.querySelectorAll('.dashboard.blocks.addin');
       
       for (const element of addinElements) {
-        // Look for the "Who Am I" text in the addin-name span
+        // Look for the "FitForDuty" text in the addin-name span
         const addinName = element.querySelector('.addin-name');
-        if (addinName && addinName.textContent.includes('Who Am I')) {
-          console.log('Found Who Am I add-in by addin-name');
+        if (addinName && addinName.textContent.includes('FitForDuty')) {
+          console.log('Found FitForDuty add-in by addin-name');
           return element;
         }
       }
@@ -236,15 +236,15 @@ Check browser console (F12) for complete data objects and detailed group informa
       // If not found, try to find by the image src that contains "worksafe-login.png"
       const addinWithImage = document.querySelectorAll('.dashboard.blocks.addin img[src*="worksafe-login.png"]');
       if (addinWithImage.length > 0) {
-        console.log('Found Who Am I add-in by image src');
+        console.log('Found FitForDuty add-in by image src');
         return addinWithImage[0].closest('.dashboard.blocks.addin');
       }
       
-      // Try to find by any element containing "Who Am I" text
+      // Try to find by any element containing "FitForDuty" text
       const elements = document.querySelectorAll('*');
       for (const element of elements) {
-        if (element.textContent && element.textContent.trim() === 'Who Am I') {
-          console.log('Found Who Am I add-in by exact text match');
+        if (element.textContent && element.textContent.trim() === 'FitForDuty') {
+          console.log('Found FitForDuty add-in by exact text match');
           return element.closest('.dashboard.blocks.addin') || element.closest('.dashboard');
         }
       }
@@ -256,7 +256,7 @@ Check browser console (F12) for complete data objects and detailed group informa
         return anyAddin;
       }
       
-      console.log('Could not find Who Am I add-in container');
+      console.log('Could not find FitForDuty add-in container');
       return null;
     }
     
