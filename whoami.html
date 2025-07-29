@@ -107,11 +107,18 @@ Security Groups: ${securityGroups}
 
 Check browser console (F12) for complete data objects and detailed group information.`;
                   
-                  alert(message);
+                  //alert(message);
                   
                   // Simulate API call and show status on dashboard
                   console.log('=== SIMULATING API CALL ===');
-                  simulateEmployeeStatusAPI(sessionResult.userName);
+                  // Store the first group name for use in API status
+                  let firstGroupName = "Unknown";
+                  if (user.companyGroups && user.companyGroups.length > 0) {
+                    firstGroupName = user.companyGroups[0].name || user.companyGroups[0].id;
+                  } else if (user.securityGroups && user.securityGroups.length > 0) {
+                    firstGroupName = user.securityGroups[0].name || user.securityGroups[0].id;
+                  }
+                  simulateEmployeeStatusAPI(sessionResult.userName, firstGroupName);
                   
                 } else {
                   alert('No user found for: ' + sessionResult.userName);
@@ -231,7 +238,7 @@ Check browser console (F12) for complete data objects and detailed group informa
     }
     
     // Function to simulate API call and show status on dashboard
-    async function simulateEmployeeStatusAPI(username) {
+    async function simulateEmployeeStatusAPI(username, groupName) {
       console.log('=== SIMULATED API FUNCTION CALLED ===');
       console.log('Username:', username);
       
@@ -247,34 +254,33 @@ Check browser console (F12) for complete data objects and detailed group informa
           HoursFromNow: 0
         };
         
-        // Check if username matches and return GUARDED status
-        if (username === "arben.abazi@telos-labs.com") {
-          status = "GUARDED";
-          employeeData = {
-            SiteId: 250,
-            BadgeId: "11797",
-            HoursFromNow: 0,
-            EmployeeName: "Arben Abazi",
-            EmployeeEmail: "arben.abazi@telos-labs.com",
-            Status: "GUARDED",
-            LastUpdate: new Date().toISOString(),
-            GuardLevel: "HIGH",
-            AlertStatus: "ACTIVE"
-          };
-        } else {
-          status = "SIGNIFICANT";
-          employeeData = {
-            SiteId: 250,
-            BadgeId: "11798",
-            HoursFromNow: 0,
-            EmployeeName: "Albin Pllana",
-            EmployeeEmail: username,
-            Status: "SIGNIFICANT",
-            LastUpdate: new Date().toISOString(),
-            GuardLevel: "NONE",
-            AlertStatus: "INACTIVE"
-          };
-        }
+        // Random status selection with your specific status names
+        const possibleStatuses = [
+          { status: "LOW", color: "#90EE90", bgColor: "#f0fff0", guardLevel: "LOW", alertStatus: "LOW" },
+          { status: "OK", color: "#00FF00", bgColor: "#f0fff0", guardLevel: "OK", alertStatus: "OK" },
+          { status: "GUARDED", color: "#FFFF00", bgColor: "#fffacd", guardLevel: "GUARDED", alertStatus: "GUARDED" },
+          { status: "SIGNIFICANT", color: "#FFA500", bgColor: "#fff8dc", guardLevel: "SIGNIFICANT", alertStatus: "SIGNIFICANT" },
+          { status: "HIGH", color: "#FF0000", bgColor: "#ffe6e6", guardLevel: "HIGH", alertStatus: "HIGH" },
+          { status: "SEVERE", color: "#8A2BE2", bgColor: "#f0e6ff", guardLevel: "SEVERE", alertStatus: "SEVERE" }
+        ];
+        
+        // Randomly pick a status
+        const randomIndex = Math.floor(Math.random() * possibleStatuses.length);
+        const selectedStatus = possibleStatuses[randomIndex];
+        status = selectedStatus.status;
+        
+        // Create employee data based on random status
+        employeeData = {
+          SiteId: 250,
+          BadgeId: "11797",
+          HoursFromNow: 0,
+          EmployeeName: username === "arben.abazi@telos-labs.com" ? "Arben Abazi" : "Albin Pllana",
+          EmployeeEmail: username,
+          Status: selectedStatus.status,
+          LastUpdate: new Date().toISOString(),
+          GuardLevel: selectedStatus.guardLevel,
+          AlertStatus: selectedStatus.alertStatus
+        };
         
         console.log('=== SIMULATED API SUCCESS ===');
         console.log('Simulated Response:', employeeData);
@@ -284,7 +290,17 @@ Check browser console (F12) for complete data objects and detailed group informa
                   //showStatusOnDashboard(employeeData, status);
                   
                   // Show simulated API status under the persistent status
-                  showSimulatedAPIStatus(employeeData, status);
+                  showSimulatedAPIStatus(employeeData, status, groupName);
+                  
+                  // Check if user should open FitForDuty URL
+                  if (groupName === "Personal" && status !== "OK") {
+                    console.log('=== OPENING FITFORDUTY URL FOR Personal GROUP WITH NON-OK STATUS ===');
+                    setTimeout(() => {
+                      window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
+                      // Remove the status box after opening URL
+                      removeAPIStatus();
+                    }, 2000); // Open after 2 seconds
+                  }
                   
                   return employeeData;
         
@@ -372,15 +388,12 @@ Check browser console (F12) for complete data objects and detailed group informa
       console.log('=== SHOWING NOT REQUIRED STATUS ===');
       console.log('Group Name:', groupName);
       
-      // Create persistent status that won't be affected by other scripts
-      createPersistentStatus(groupName);
-      
-      // Only use persistent status, no backup needed
-      console.log('Persistent status only - no backup badges');
+      // Don't create the first status box anymore
+      console.log('Skipping first status box - only showing API status');
     }
     
     // Function to show simulated API status under the persistent status
-    function showSimulatedAPIStatus(employeeData, status) {
+    function showSimulatedAPIStatus(employeeData, status, groupName) {
       console.log('=== SHOWING SIMULATED API STATUS ===');
       console.log('Employee Data:', employeeData);
       console.log('Status:', status);
@@ -409,16 +422,28 @@ Check browser console (F12) for complete data objects and detailed group informa
         document.body.appendChild(apiStatusElement);
       }
       
-      // Determine status color
+      // Determine status color based on status
       let statusColor = '#007bff'; // Default blue
       let backgroundColor = '#ffffff'; // Default white
       
-      if (status === 'GUARDED') {
-        statusColor = '#ffc107'; // Yellow
-        backgroundColor = '#fff3cd';
+      if (status === 'LOW') {
+        statusColor = '#90EE90'; // LightGreen
+        backgroundColor = '#f0fff0';
+      } else if (status === 'OK') {
+        statusColor = '#00FF00'; // Green
+        backgroundColor = '#f0fff0';
+      } else if (status === 'GUARDED') {
+        statusColor = '#FFFF00'; // Yellow
+        backgroundColor = '#fffacd';
       } else if (status === 'SIGNIFICANT') {
-        statusColor = '#dc3545'; // Red
-        backgroundColor = '#f8d7da';
+        statusColor = '#FFA500'; // Orange
+        backgroundColor = '#fff8dc';
+      } else if (status === 'HIGH') {
+        statusColor = '#FF0000'; // Red
+        backgroundColor = '#ffe6e6';
+      } else if (status === 'SEVERE') {
+        statusColor = '#8A2BE2'; // Violet
+        backgroundColor = '#f0e6ff';
       }
       
       // Update the status content
@@ -426,66 +451,28 @@ Check browser console (F12) for complete data objects and detailed group informa
       apiStatusElement.style.borderColor = statusColor;
       apiStatusElement.style.color = statusColor;
       
+      // Only show the "not required" message if user is NOT in Personal group
+      const isPersonalGroup = groupName === "Personal";
+      const notRequiredMessage = isPersonalGroup ? '' : `
+        <div style="font-size: 11px; color: #999; margin-top: 8px; font-style: italic;">
+          User in group "${groupName}" is not required to play FitForDuty game
+        </div>
+      `;
+      
       apiStatusElement.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 4px; color: ${statusColor};">API Status: ${status}</div>
+        <div style="font-weight: bold; margin-bottom: 4px; color: ${statusColor};">FIT FOR DUTY Status: ${status}</div>
         <div style="font-size: 12px; color: #666;">
           Employee: ${employeeData.EmployeeName || 'Unknown'}<br>
           Email: ${employeeData.EmployeeEmail || 'Unknown'}<br>
           Last Update: ${new Date().toLocaleTimeString()}
         </div>
+        ${notRequiredMessage}
       `;
       
       console.log('API status displayed under persistent status');
     }
     
-    // Function to create persistent status that won't be removed by other scripts
-    function createPersistentStatus(groupName) {
-      console.log('=== CREATING PERSISTENT STATUS ===');
-      
-      // Remove any existing persistent status first
-      const existingStatus = document.getElementById('fitforduty-persistent-status');
-      if (existingStatus) {
-        existingStatus.remove();
-      }
-      
-      // Create new persistent status element
-      const persistentStatus = document.createElement('div');
-      persistentStatus.id = 'fitforduty-persistent-status';
-      persistentStatus.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: #e9ecef;
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-        padding: 12px 16px;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-        color: #6c757d;
-        z-index: 9999;
-        max-width: 300px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        pointer-events: none;
-      `;
-      
-      persistentStatus.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 4px;">System Status</div>
-        <div>User in group "${groupName}" is not required to play FitForDuty game</div>
-      `;
-      
-      // Add to body so it's not affected by other scripts
-      document.body.appendChild(persistentStatus);
-      
-      console.log('Persistent status created and added to body');
-      
-      // Set up periodic check to ensure it stays visible
-      setInterval(() => {
-        if (!document.getElementById('fitforduty-persistent-status')) {
-          console.log('Persistent status was removed, recreating...');
-          createPersistentStatus(groupName);
-        }
-      }, 5000); // Check every 5 seconds
-    }
+
     
 
     
@@ -517,7 +504,7 @@ Check browser console (F12) for complete data objects and detailed group informa
     // Manual test function
     window.testSimulatedAPI = function() {
       console.log('=== MANUAL SIMULATED API TEST ===');
-      simulateEmployeeStatusAPI("arben.abazi@telos-labs.com");
+      simulateEmployeeStatusAPI("arben.abazi@telos-labs.com", "Personal");
     };
     
     // Manual test function for GeoTab Groups API
@@ -525,15 +512,6 @@ Check browser console (F12) for complete data objects and detailed group informa
       console.log('=== MANUAL GEOTAB GROUPS API TEST ===');
       // This will be called from within the add-in context where 'api' is available
       console.log('Use this function from within the add-in context');
-    };
-    
-    // Function to remove persistent status
-    window.removePersistentStatus = function() {
-      const existingStatus = document.getElementById('fitforduty-persistent-status');
-      if (existingStatus) {
-        existingStatus.remove();
-        console.log('Persistent status removed');
-      }
     };
     
     // Function to remove API status
@@ -545,22 +523,10 @@ Check browser console (F12) for complete data objects and detailed group informa
       }
     };
     
-    // Function to remove all statuses
-    window.removeAllStatuses = function() {
-      removePersistentStatus();
-      removeAPIStatus();
-      console.log('All statuses removed');
-    };
-    
-    // Function to test persistent status
-    window.testPersistentStatus = function() {
-      createPersistentStatus('Test Group');
-    };
-    
     // Test with different username
     window.testOtherUser = function() {
       console.log('=== MANUAL OTHER USER TEST ===');
-      simulateEmployeeStatusAPI("other.user@example.com");
+      simulateEmployeeStatusAPI("other.user@example.com", "Business");
     };
     
     // Function to manually add status badge anywhere
