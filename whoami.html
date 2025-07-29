@@ -161,8 +161,10 @@ Check browser console (F12) for complete data objects and detailed group informa
                   setTimeout(() => {
                     window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
                   }, 1000); // Open after 2 seconds
-                }else{
+                                }else{
                   console.log('=== NOT OPENING FITFORDUTY URL FOR OTHER GROUPS ===');
+                  // Show status on the GeoTab Drive dashboard that the user is not required to play the FitForDuty game
+                  showNotRequiredStatus(groupName);
                 }
               }
             },
@@ -360,6 +362,49 @@ Check browser console (F12) for complete data objects and detailed group informa
       
       console.log('Could not find FitForDuty add-in container');
       return null;
+    }
+    
+    // Function to show "Not Required" status on dashboard
+    function showNotRequiredStatus(groupName) {
+      console.log('=== SHOWING NOT REQUIRED STATUS ===');
+      console.log('Group Name:', groupName);
+      
+      // Try to find the add-in button/container in the GeoTab Drive interface
+      const addinContainer = findAddinContainer();
+      
+      if (addinContainer) {
+        // Create "Not Required" status badge
+        const notRequiredBadge = createNotRequiredBadge(groupName);
+        
+        // Add the status badge to the dashboard
+        addinContainer.appendChild(notRequiredBadge);
+        
+        console.log('Not Required status badge added to dashboard');
+      } else {
+        console.log('Could not find add-in container, showing alert instead');
+        alert(`NOT REQUIRED: User in group "${groupName}" is not required to play FitForDuty game`);
+      }
+    }
+    
+    // Function to create "Not Required" status badge
+    function createNotRequiredBadge(groupName) {
+      const badge = document.createElement('span');
+      
+      badge.className = 'status-badge badge-clear';
+      badge.textContent = ' (NOT REQUIRED)';
+      badge.title = `User in group "${groupName}" is not required to play FitForDuty game`;
+      
+      // Add some styling for inline display
+      badge.style.marginLeft = '8px';
+      badge.style.fontSize = '12px';
+      badge.style.fontWeight = 'normal';
+      badge.style.color = '#6c757d';
+      badge.style.backgroundColor = '#e9ecef';
+      badge.style.border = '1px solid #ced4da';
+      badge.style.borderRadius = '4px';
+      badge.style.padding = '2px 6px';
+      
+      return badge;
     }
     
     // Function to create status badge
