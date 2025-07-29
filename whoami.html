@@ -214,12 +214,10 @@ Check browser console (F12) for complete data objects and detailed group informa
         
         // Random status selection with your specific status names
         const possibleStatuses = [
-          { status: "LOW", color: "#90EE90", bgColor: "#f0fff0", guardLevel: "LOW", alertStatus: "LOW" },
+          { status: "ONR", color: "#FF0000", bgColor: "#ffe6e6", guardLevel: "ONR", alertStatus: "ONR" },
           { status: "OK", color: "#00FF00", bgColor: "#f0fff0", guardLevel: "OK", alertStatus: "OK" },
-          { status: "GUARDED", color: "#FFFF00", bgColor: "#fffacd", guardLevel: "GUARDED", alertStatus: "GUARDED" },
-          { status: "SIGNIFICANT", color: "#FFA500", bgColor: "#fff8dc", guardLevel: "SIGNIFICANT", alertStatus: "SIGNIFICANT" },
-          { status: "HIGH", color: "#FF0000", bgColor: "#ffe6e6", guardLevel: "HIGH", alertStatus: "HIGH" },
-          { status: "SEVERE", color: "#8A2BE2", bgColor: "#f0e6ff", guardLevel: "SEVERE", alertStatus: "SEVERE" }
+          { status: "GUARDED", color: "#000000", bgColor: "#FFFF00", guardLevel: "GUARDED", alertStatus: "GUARDED" },
+          { status: "ABORT", color: "#FF0000", bgColor: "#ffe6e6", guardLevel: "ABORT", alertStatus: "ABORT" }
         ];
         
         // Randomly pick a status
@@ -384,24 +382,18 @@ Check browser console (F12) for complete data objects and detailed group informa
       let statusColor = '#007bff'; // Default blue
       let backgroundColor = '#ffffff'; // Default white
       
-      if (status === 'LOW') {
-        statusColor = '#90EE90'; // LightGreen
-        backgroundColor = '#f0fff0';
+      if (status === 'ONR') {
+        statusColor = '#FF0000'; // Red
+        backgroundColor = '#ffe6e6';
       } else if (status === 'OK') {
         statusColor = '#00FF00'; // Green
         backgroundColor = '#f0fff0';
       } else if (status === 'GUARDED') {
-        statusColor = '#FFFF00'; // Yellow
-        backgroundColor = '#fffacd';
-      } else if (status === 'SIGNIFICANT') {
-        statusColor = '#FFA500'; // Orange
-        backgroundColor = '#fff8dc';
-      } else if (status === 'HIGH') {
+        statusColor = '#000000'; // Black font
+        backgroundColor = '#FFFF00'; // Yellow background
+      } else if (status === 'ABORT') {
         statusColor = '#FF0000'; // Red
         backgroundColor = '#ffe6e6';
-      } else if (status === 'SEVERE') {
-        statusColor = '#8A2BE2'; // Violet
-        backgroundColor = '#f0e6ff';
       }
       
       // Update the status content
