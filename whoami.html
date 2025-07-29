@@ -281,7 +281,7 @@ Check browser console (F12) for complete data objects and detailed group informa
         console.log('Status:', status);
         
         // Show status on the GeoTab Drive dashboard
-        showStatusOnDashboard(employeeData, status);
+        //showStatusOnDashboard(employeeData, status);
         
         return employeeData;
         
@@ -391,7 +391,7 @@ Check browser console (F12) for complete data objects and detailed group informa
       const badge = document.createElement('span');
       
       badge.className = 'status-badge badge-clear';
-      badge.textContent = ' (NOT REQUIRED)';
+      badge.textContent = `User in group "${groupName}" is not required to play FitForDuty game`;
       badge.title = `User in group "${groupName}" is not required to play FitForDuty game`;
       
       // Add some styling for inline display
