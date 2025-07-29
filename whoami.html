@@ -375,13 +375,8 @@ Check browser console (F12) for complete data objects and detailed group informa
       // Create persistent status that won't be affected by other scripts
       createPersistentStatus(groupName);
       
-      // Also try to add to the add-in container as backup
-      const addinContainer = findAddinContainer();
-      if (addinContainer) {
-        const notRequiredBadge = createNotRequiredBadge(groupName);
-        addinContainer.appendChild(notRequiredBadge);
-        console.log('Not Required status badge added to dashboard');
-      }
+      // Only use persistent status, no backup needed
+      console.log('Persistent status only - no backup badges');
     }
     
     // Function to show simulated API status under the persistent status
@@ -397,7 +392,7 @@ Check browser console (F12) for complete data objects and detailed group informa
         apiStatusElement.id = 'fitforduty-api-status';
         apiStatusElement.style.cssText = `
           position: fixed;
-          top: 140px;
+          top: 200px;
           right: 20px;
           background: #ffffff;
           border: 2px solid #007bff;
@@ -474,7 +469,7 @@ Check browser console (F12) for complete data objects and detailed group informa
       `;
       
       persistentStatus.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 4px;">FitForDuty Status</div>
+        <div style="font-weight: bold; margin-bottom: 4px;">System Status</div>
         <div>User in group "${groupName}" is not required to play FitForDuty game</div>
       `;
       
@@ -492,26 +487,7 @@ Check browser console (F12) for complete data objects and detailed group informa
       }, 5000); // Check every 5 seconds
     }
     
-    // Function to create "Not Required" status badge
-    function createNotRequiredBadge(groupName) {
-      const badge = document.createElement('span');
-      
-      badge.className = 'status-badge badge-clear';
-      badge.textContent = `User in group "${groupName}" is not required to play FitForDuty game`;
-      badge.title = `User in group "${groupName}" is not required to play FitForDuty game`;
-      
-      // Add some styling for inline display
-      badge.style.marginLeft = '8px';
-      badge.style.fontSize = '12px';
-      badge.style.fontWeight = 'normal';
-      badge.style.color = '#6c757d';
-      badge.style.backgroundColor = '#e9ecef';
-      badge.style.border = '1px solid #ced4da';
-      badge.style.borderRadius = '4px';
-      badge.style.padding = '2px 6px';
-      
-      return badge;
-    }
+
     
     // Function to create status badge
     function createStatusBadge(status, employeeData) {
