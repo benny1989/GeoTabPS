@@ -369,21 +369,65 @@ Check browser console (F12) for complete data objects and detailed group informa
       console.log('=== SHOWING NOT REQUIRED STATUS ===');
       console.log('Group Name:', groupName);
       
-      // Try to find the add-in button/container in the GeoTab Drive interface
-      const addinContainer = findAddinContainer();
+      // Create persistent status that won't be affected by other scripts
+      createPersistentStatus(groupName);
       
+      // Also try to add to the add-in container as backup
+      const addinContainer = findAddinContainer();
       if (addinContainer) {
-        // Create "Not Required" status badge
         const notRequiredBadge = createNotRequiredBadge(groupName);
-        
-        // Add the status badge to the dashboard
         addinContainer.appendChild(notRequiredBadge);
-        
         console.log('Not Required status badge added to dashboard');
-      } else {
-        console.log('Could not find add-in container, showing alert instead');
-        alert(`NOT REQUIRED: User in group "${groupName}" is not required to play FitForDuty game`);
       }
+    }
+    
+    // Function to create persistent status that won't be removed by other scripts
+    function createPersistentStatus(groupName) {
+      console.log('=== CREATING PERSISTENT STATUS ===');
+      
+      // Remove any existing persistent status first
+      const existingStatus = document.getElementById('fitforduty-persistent-status');
+      if (existingStatus) {
+        existingStatus.remove();
+      }
+      
+      // Create new persistent status element
+      const persistentStatus = document.createElement('div');
+      persistentStatus.id = 'fitforduty-persistent-status';
+      persistentStatus.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #e9ecef;
+        border: 2px solid #ced4da;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        color: #6c757d;
+        z-index: 9999;
+        max-width: 300px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        pointer-events: none;
+      `;
+      
+      persistentStatus.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 4px;">FitForDuty Status</div>
+        <div>User in group "${groupName}" is not required to play FitForDuty game</div>
+      `;
+      
+      // Add to body so it's not affected by other scripts
+      document.body.appendChild(persistentStatus);
+      
+      console.log('Persistent status created and added to body');
+      
+      // Set up periodic check to ensure it stays visible
+      setInterval(() => {
+        if (!document.getElementById('fitforduty-persistent-status')) {
+          console.log('Persistent status was removed, recreating...');
+          createPersistentStatus(groupName);
+        }
+      }, 5000); // Check every 5 seconds
     }
     
     // Function to create "Not Required" status badge
@@ -443,6 +487,20 @@ Check browser console (F12) for complete data objects and detailed group informa
       console.log('=== MANUAL GEOTAB GROUPS API TEST ===');
       // This will be called from within the add-in context where 'api' is available
       console.log('Use this function from within the add-in context');
+    };
+    
+    // Function to remove persistent status
+    window.removePersistentStatus = function() {
+      const existingStatus = document.getElementById('fitforduty-persistent-status');
+      if (existingStatus) {
+        existingStatus.remove();
+        console.log('Persistent status removed');
+      }
+    };
+    
+    // Function to test persistent status
+    window.testPersistentStatus = function() {
+      createPersistentStatus('Test Group');
     };
     
     // Test with different username
