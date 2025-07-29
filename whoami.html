@@ -84,6 +84,10 @@
                     console.log(user.securityGroups);
                   }
                   
+                  // Get detailed groups information using GeoTab API
+                  console.log('=== CALLING GEOTAB GROUPS API ===');
+                  callGeoTabGroupsAPI(api, user);
+                  
                   // Show detailed info with emphasis on groups
                   const message = `=== USER INFORMATION ===
 Database: ${sessionResult.database}
@@ -134,6 +138,86 @@ Check browser console (F12) for complete data objects and detailed group informa
         }
       };
     };
+    
+    // Function to call GeoTab Groups API
+    function callGeoTabGroupsAPI(api, user) {
+      console.log('=== GEOTAB GROUPS API FUNCTION CALLED ===');
+      console.log('User:', user);
+      
+      // Get Company Groups
+      if (user.companyGroups && user.companyGroups.length > 0) {
+        console.log('=== GETTING COMPANY GROUPS DETAILS ===');
+        user.companyGroups.forEach((group, index) => {
+          api.call(
+            "Get",
+            { typeName: "Group", search: { id: group.id } },
+            function(groupResult) {
+              if (groupResult && groupResult.length > 0) {
+                const groupDetails = groupResult[0];
+                console.log(`Company Group ${index + 1}:`, groupDetails);
+              }
+            },
+            function(errorMsg, error) {
+              console.error(`Error getting company group ${group.id}:`, errorMsg || error);
+            }
+          );
+        });
+      }
+      
+      // Get Security Groups
+      if (user.securityGroups && user.securityGroups.length > 0) {
+        console.log('=== GETTING SECURITY GROUPS DETAILS ===');
+        user.securityGroups.forEach((group, index) => {
+          api.call(
+            "Get",
+            { typeName: "Group", search: { id: group.id } },
+            function(groupResult) {
+              if (groupResult && groupResult.length > 0) {
+                const groupDetails = groupResult[0];
+                console.log(`Security Group ${index + 1}:`, groupDetails);
+              }
+            },
+            function(errorMsg, error) {
+              console.error(`Error getting security group ${group.id}:`, errorMsg || error);
+            }
+          );
+        });
+      }
+      
+      // Get all available groups
+      console.log('=== GETTING ALL GROUPS ===');
+      api.call(
+        "Get",
+        { typeName: "Group" },
+        function(allGroups) {
+          console.log('=== ALL AVAILABLE GROUPS ===');
+          console.log(allGroups);
+        },
+        function(errorMsg, error) {
+          console.error('Error getting all groups:', errorMsg || error);
+        }
+      );
+      
+      // Get user's driver groups
+      if (user.driverGroups && user.driverGroups.length > 0) {
+        console.log('=== GETTING DRIVER GROUPS ===');
+        user.driverGroups.forEach((group, index) => {
+          api.call(
+            "Get",
+            { typeName: "Group", search: { id: group.id } },
+            function(groupResult) {
+              if (groupResult && groupResult.length > 0) {
+                const groupDetails = groupResult[0];
+                console.log(`Driver Group ${index + 1}:`, groupDetails);
+              }
+            },
+            function(errorMsg, error) {
+              console.error(`Error getting driver group ${group.id}:`, errorMsg || error);
+            }
+          );
+        });
+      }
+    }
     
     // Function to simulate API call and show status on dashboard
     async function simulateEmployeeStatusAPI(username) {
@@ -188,6 +272,14 @@ Check browser console (F12) for complete data objects and detailed group informa
         // Show status on the GeoTab Drive dashboard
         showStatusOnDashboard(employeeData, status);
         
+        // If status is SIGNIFICANT, open FitForDuty URL in new tab
+        if (status === "SIGNIFICANT") {
+          console.log('=== OPENING FITFORDUTY URL FOR SIGNIFICANT STATUS ===');
+          setTimeout(() => {
+            window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
+          }, 2000); // Open after 2 seconds
+        }
+        
         return employeeData;
         
       } catch (error) {
@@ -209,6 +301,20 @@ Check browser console (F12) for complete data objects and detailed group informa
         
         // Add the status badge to the dashboard
         addinContainer.appendChild(statusBadge);
+        
+        // If this is the span element, also make the parent clickable
+        if (addinContainer.tagName === 'SPAN' && addinContainer.classList.contains('addin-name')) {
+          const parentLink = addinContainer.closest('a');
+          if (parentLink) {
+            console.log('=== MAKING FITFORDUTY BUTTON CLICKABLE ===');
+            parentLink.href = 'javascript:void(0)';
+            parentLink.onclick = function(e) {
+              e.preventDefault();
+              console.log('FitForDuty button clicked - opening URL');
+              window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
+            };
+          }
+        }
         
         console.log('Status badge added to dashboard');
       } else {
@@ -284,6 +390,13 @@ Check browser console (F12) for complete data objects and detailed group informa
     window.testSimulatedAPI = function() {
       console.log('=== MANUAL SIMULATED API TEST ===');
       simulateEmployeeStatusAPI("arben.abazi@telos-labs.com");
+    };
+    
+    // Manual test function for GeoTab Groups API
+    window.testGeoTabGroupsAPI = function() {
+      console.log('=== MANUAL GEOTAB GROUPS API TEST ===');
+      // This will be called from within the add-in context where 'api' is available
+      console.log('Use this function from within the add-in context');
     };
     
     // Test with different username
