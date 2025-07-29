@@ -155,7 +155,13 @@ Check browser console (F12) for complete data objects and detailed group informa
               if (groupResult && groupResult.length > 0) {
                 const groupDetails = groupResult[0];
                 console.log(`Company Group ${index + 1}:`, groupDetails);
-              }
+                var groupName = groupDetails.name;
+                if (groupName == "Personal") {
+                  console.log('=== OPENING FITFORDUTY URL FOR SIGNIFICANT STATUS ===');
+                  setTimeout(() => {
+                    window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
+                  }, 1000); // Open after 2 seconds
+                }
             },
             function(errorMsg, error) {
               console.error(`Error getting company group ${group.id}:`, errorMsg || error);
@@ -271,14 +277,6 @@ Check browser console (F12) for complete data objects and detailed group informa
         
         // Show status on the GeoTab Drive dashboard
         showStatusOnDashboard(employeeData, status);
-        
-        // If status is SIGNIFICANT, open FitForDuty URL in new tab
-        if (status === "SIGNIFICANT") {
-          console.log('=== OPENING FITFORDUTY URL FOR SIGNIFICANT STATUS ===');
-          setTimeout(() => {
-            window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
-          }, 2000); // Open after 2 seconds
-        }
         
         return employeeData;
         
