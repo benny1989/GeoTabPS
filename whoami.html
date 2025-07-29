@@ -86,7 +86,7 @@
                   
                   // Get detailed groups information using GeoTab API
                   console.log('=== CALLING GEOTAB GROUPS API ===');
-                  callGeoTabGroupsAPI(api, user);
+                  callGeoTabGroupsAPI(api, user, sessionResult.userName);
                   
                   // Show detailed info with emphasis on groups
                   const message = `=== USER INFORMATION ===
@@ -109,16 +109,8 @@ Check browser console (F12) for complete data objects and detailed group informa
                   
                   //alert(message);
                   
-                  // Simulate API call and show status on dashboard
-                  console.log('=== SIMULATING API CALL ===');
-                  // Store the first group name for use in API status
-                  let firstGroupName = "Unknown";
-                  if (user.companyGroups && user.companyGroups.length > 0) {
-                    firstGroupName = user.companyGroups[0].name || user.companyGroups[0].id;
-                  } else if (user.securityGroups && user.securityGroups.length > 0) {
-                    firstGroupName = user.securityGroups[0].name || user.securityGroups[0].id;
-                  }
-                  simulateEmployeeStatusAPI(sessionResult.userName, firstGroupName);
+                  // API call will be made from within the groups processing
+                  console.log('=== API CALL WILL BE MADE FROM GROUPS PROCESSING ===');
                   
                 } else {
                   alert('No user found for: ' + sessionResult.userName);
@@ -147,94 +139,60 @@ Check browser console (F12) for complete data objects and detailed group informa
     };
     
     // Function to call GeoTab Groups API
-    function callGeoTabGroupsAPI(api, user) {
+    function callGeoTabGroupsAPI(api, user, username) {
       console.log('=== GEOTAB GROUPS API FUNCTION CALLED ===');
       console.log('User:', user);
       
-      // Get Company Groups
+      // Get the first group name
+      let groupName = "Unknown";
+      
       if (user.companyGroups && user.companyGroups.length > 0) {
-        console.log('=== GETTING COMPANY GROUPS DETAILS ===');
-        user.companyGroups.forEach((group, index) => {
-          api.call(
-            "Get",
-            { typeName: "Group", search: { id: group.id } },
-            function(groupResult) {
-              if (groupResult && groupResult.length > 0) {
-                const groupDetails = groupResult[0];
-                console.log(`Company Group ${index + 1}:`, groupDetails);
-                var groupName = groupDetails.name;
-                if (groupName == "Personal") {
-                  console.log('=== OPENING FITFORDUTY URL FOR Personal Group ===');
-                  setTimeout(() => {
-                    window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
-                  }, 1000); // Open after 2 seconds
-                                }else{
-                  console.log('=== NOT OPENING FITFORDUTY URL FOR OTHER GROUPS ===');
-                  // Show status on the GeoTab Drive dashboard that the user is not required to play the FitForDuty game
-                  showNotRequiredStatus(groupName);
-                }
-              }
-            },
-            function(errorMsg, error) {
-              console.error(`Error getting company group ${group.id}:`, errorMsg || error);
+        // Get the first company group name
+        api.call(
+          "Get",
+          { typeName: "Group", search: { id: user.companyGroups[0].id } },
+          function(groupResult) {
+            if (groupResult && groupResult.length > 0) {
+              groupName = groupResult[0].name;
+              console.log('=== FOUND GROUP NAME: ' + groupName + ' ===');
+              
+              // Call the API with the correct group name
+              simulateEmployeeStatusAPI(username, groupName);
             }
-          );
-        });
+          },
+          function(errorMsg, error) {
+            console.error(`Error getting company group:`, errorMsg || error);
+            // Fallback to API call with unknown group
+            simulateEmployeeStatusAPI(username, groupName);
+          }
+        );
+      } else if (user.securityGroups && user.securityGroups.length > 0) {
+        // Get the first security group name
+        api.call(
+          "Get",
+          { typeName: "Group", search: { id: user.securityGroups[0].id } },
+          function(groupResult) {
+            if (groupResult && groupResult.length > 0) {
+              groupName = groupResult[0].name;
+              console.log('=== FOUND GROUP NAME: ' + groupName + ' ===');
+              
+              // Call the API with the correct group name
+              simulateEmployeeStatusAPI(username, groupName);
+            }
+          },
+          function(errorMsg, error) {
+            console.error(`Error getting security group:`, errorMsg || error);
+            // Fallback to API call with unknown group
+            simulateEmployeeStatusAPI(username, groupName);
+          }
+        );
+      } else {
+        // No groups found, call API with unknown group
+        console.log('=== NO GROUPS FOUND, USING UNKNOWN ===');
+        simulateEmployeeStatusAPI(username, groupName);
       }
       
-      // Get Security Groups
-      if (user.securityGroups && user.securityGroups.length > 0) {
-        console.log('=== GETTING SECURITY GROUPS DETAILS ===');
-        user.securityGroups.forEach((group, index) => {
-          api.call(
-            "Get",
-            { typeName: "Group", search: { id: group.id } },
-            function(groupResult) {
-              if (groupResult && groupResult.length > 0) {
-                const groupDetails = groupResult[0];
-                console.log(`Security Group ${index + 1}:`, groupDetails);
-              }
-            },
-            function(errorMsg, error) {
-              console.error(`Error getting security group ${group.id}:`, errorMsg || error);
-            }
-          );
-        });
-      }
-      
-      // Get all available groups
-      console.log('=== GETTING ALL GROUPS ===');
-      api.call(
-        "Get",
-        { typeName: "Group" },
-        function(allGroups) {
-          console.log('=== ALL AVAILABLE GROUPS ===');
-          console.log(allGroups);
-        },
-        function(errorMsg, error) {
-          console.error('Error getting all groups:', errorMsg || error);
-        }
-      );
-      
-      // Get user's driver groups
-      if (user.driverGroups && user.driverGroups.length > 0) {
-        console.log('=== GETTING DRIVER GROUPS ===');
-        user.driverGroups.forEach((group, index) => {
-          api.call(
-            "Get",
-            { typeName: "Group", search: { id: group.id } },
-            function(groupResult) {
-              if (groupResult && groupResult.length > 0) {
-                const groupDetails = groupResult[0];
-                console.log(`Driver Group ${index + 1}:`, groupDetails);
-              }
-            },
-            function(errorMsg, error) {
-              console.error(`Error getting driver group ${group.id}:`, errorMsg || error);
-            }
-          );
-        });
-      }
+
     }
     
     // Function to simulate API call and show status on dashboard
