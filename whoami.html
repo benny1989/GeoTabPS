@@ -129,7 +129,11 @@ Check browser console (F12) for complete data objects and detailed group informa
         focus: function(api, state) {
           // Show status when add-in is focused
           console.log('=== ADD-IN FOCUSED ===');
-          // You can add status display logic here if needed
+          // Recall the last status if available
+          if (window.lastStatusData) {
+            console.log('=== RECALLING LAST STATUS ===');
+            showSimulatedAPIStatus(window.lastStatusData.employeeData, window.lastStatusData.status, window.lastStatusData.groupName);
+          }
         },
 
         blur: function(api, state) {
@@ -245,6 +249,13 @@ Check browser console (F12) for complete data objects and detailed group informa
                           // Show status on the GeoTab Drive dashboard
                   //showStatusOnDashboard(employeeData, status);
                   
+                  // Store status data globally for recall
+                  window.lastStatusData = {
+                    employeeData: employeeData,
+                    status: status,
+                    groupName: groupName
+                  };
+                  
                   // Show simulated API status under the persistent status
                   showSimulatedAPIStatus(employeeData, status, groupName);
                   
@@ -253,8 +264,6 @@ Check browser console (F12) for complete data objects and detailed group informa
                     console.log('=== OPENING FITFORDUTY URL FOR Personal GROUP WITH NON-OK STATUS ===');
                     setTimeout(() => {
                       window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
-                      // Remove the status box after opening URL
-                      removeAPIStatus();
                     }, 2000); // Open after 2 seconds
                   }
                   
@@ -459,7 +468,7 @@ Check browser console (F12) for complete data objects and detailed group informa
     
     // Manual test function for GeoTab Groups API
     window.testGeoTabGroupsAPI = function() {
-      console.log('=== MANUALa GEOTAB GROUPS API TEST ===');
+      console.log('=== MANUAL GEOTAB GROUPS API TEST ===');
       // This will be called from within the add-in context where 'api' is available
       console.log('Use this function from within the add-in context');
     };
@@ -470,6 +479,16 @@ Check browser console (F12) for complete data objects and detailed group informa
       if (apiStatus) {
         apiStatus.remove();
         console.log('API status removed');
+      }
+    };
+    
+    // Function to recall the last status
+    window.recallStatus = function() {
+      if (window.lastStatusData) {
+        console.log('=== MANUALLY RECALLING LAST STATUS ===');
+        showSimulatedAPIStatus(window.lastStatusData.employeeData, window.lastStatusData.status, window.lastStatusData.groupName);
+      } else {
+        console.log('No previous status data available');
       }
     };
     
