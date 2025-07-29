@@ -157,10 +157,12 @@ Check browser console (F12) for complete data objects and detailed group informa
                 console.log(`Company Group ${index + 1}:`, groupDetails);
                 var groupName = groupDetails.name;
                 if (groupName == "Personal") {
-                  console.log('=== OPENING FITFORDUTY URL FOR SIGNIFICANT STATUS ===');
+                  console.log('=== OPENING FITFORDUTY URL FOR Personal Group ===');
                   setTimeout(() => {
                     window.open('https://fitforduty.alert.alertmeter.com/Test/Account/PreLogin', '_blank');
                   }, 1000); // Open after 2 seconds
+                }else{
+                  console.log('=== NOT OPENING FITFORDUTY URL FOR OTHER GROUPS ===');
                 }
               }
             },
