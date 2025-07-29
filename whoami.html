@@ -280,10 +280,13 @@ Check browser console (F12) for complete data objects and detailed group informa
         console.log('Simulated Response:', employeeData);
         console.log('Status:', status);
         
-        // Show status on the GeoTab Drive dashboard
-        //showStatusOnDashboard(employeeData, status);
-        
-        return employeeData;
+                          // Show status on the GeoTab Drive dashboard
+                  //showStatusOnDashboard(employeeData, status);
+                  
+                  // Show simulated API status under the persistent status
+                  showSimulatedAPIStatus(employeeData, status);
+                  
+                  return employeeData;
         
       } catch (error) {
         console.error('=== SIMULATED API ERROR ===');
@@ -381,6 +384,65 @@ Check browser console (F12) for complete data objects and detailed group informa
       }
     }
     
+    // Function to show simulated API status under the persistent status
+    function showSimulatedAPIStatus(employeeData, status) {
+      console.log('=== SHOWING SIMULATED API STATUS ===');
+      console.log('Employee Data:', employeeData);
+      console.log('Status:', status);
+      
+      // Create or update the API status element
+      let apiStatusElement = document.getElementById('fitforduty-api-status');
+      if (!apiStatusElement) {
+        apiStatusElement = document.createElement('div');
+        apiStatusElement.id = 'fitforduty-api-status';
+        apiStatusElement.style.cssText = `
+          position: fixed;
+          top: 140px;
+          right: 20px;
+          background: #ffffff;
+          border: 2px solid #007bff;
+          border-radius: 8px;
+          padding: 12px 16px;
+          font-family: Arial, sans-serif;
+          font-size: 14px;
+          color: #333333;
+          z-index: 9999;
+          max-width: 300px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          pointer-events: none;
+        `;
+        document.body.appendChild(apiStatusElement);
+      }
+      
+      // Determine status color
+      let statusColor = '#007bff'; // Default blue
+      let backgroundColor = '#ffffff'; // Default white
+      
+      if (status === 'GUARDED') {
+        statusColor = '#ffc107'; // Yellow
+        backgroundColor = '#fff3cd';
+      } else if (status === 'SIGNIFICANT') {
+        statusColor = '#dc3545'; // Red
+        backgroundColor = '#f8d7da';
+      }
+      
+      // Update the status content
+      apiStatusElement.style.backgroundColor = backgroundColor;
+      apiStatusElement.style.borderColor = statusColor;
+      apiStatusElement.style.color = statusColor;
+      
+      apiStatusElement.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 4px; color: ${statusColor};">API Status: ${status}</div>
+        <div style="font-size: 12px; color: #666;">
+          Employee: ${employeeData.EmployeeName || 'Unknown'}<br>
+          Email: ${employeeData.EmployeeEmail || 'Unknown'}<br>
+          Last Update: ${new Date().toLocaleTimeString()}
+        </div>
+      `;
+      
+      console.log('API status displayed under persistent status');
+    }
+    
     // Function to create persistent status that won't be removed by other scripts
     function createPersistentStatus(groupName) {
       console.log('=== CREATING PERSISTENT STATUS ===');
@@ -396,7 +458,7 @@ Check browser console (F12) for complete data objects and detailed group informa
       persistentStatus.id = 'fitforduty-persistent-status';
       persistentStatus.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 80px;
         right: 20px;
         background: #e9ecef;
         border: 2px solid #ced4da;
@@ -496,6 +558,22 @@ Check browser console (F12) for complete data objects and detailed group informa
         existingStatus.remove();
         console.log('Persistent status removed');
       }
+    };
+    
+    // Function to remove API status
+    window.removeAPIStatus = function() {
+      const apiStatus = document.getElementById('fitforduty-api-status');
+      if (apiStatus) {
+        apiStatus.remove();
+        console.log('API status removed');
+      }
+    };
+    
+    // Function to remove all statuses
+    window.removeAllStatuses = function() {
+      removePersistentStatus();
+      removeAPIStatus();
+      console.log('All statuses removed');
     };
     
     // Function to test persistent status
